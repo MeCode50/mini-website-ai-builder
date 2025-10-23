@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Website {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  prompt      String
+  htmlContent String
+  cssContent  String?
+  metadata    Json?
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("websites")
+}
+
+model GenerationLog {
+  id        String   @id @default(uuid())
+  prompt    String
+  response  String?
+  error     String?
+  duration  Int?     // in milliseconds
+  tokens    Int?     // OpenAI tokens used
+  createdAt DateTime @default(now())
+
+  @@map("generation_logs")
+}
