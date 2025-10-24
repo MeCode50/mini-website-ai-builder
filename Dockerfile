@@ -25,4 +25,4 @@ RUN find . -name "*.js" -path "./dist/*" || echo "No JS files found in dist"
 EXPOSE 3000
 
 # Start the application
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "start:prod"]
