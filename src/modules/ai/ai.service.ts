@@ -113,7 +113,13 @@ Return your response as a JSON object with the following structure:
 
       const { nextjsContent, packageJson, tailwindConfig, metadata } = parsedResponse;
 
-      if (!nextjsContent || !nextjsContent.page) {
+      if (!nextjsContent || (!nextjsContent.page && !nextjsContent['page.tsx'])) {
+        this.logger.error('Next.js content validation failed:', {
+          hasNextjsContent: !!nextjsContent,
+          hasPage: !!nextjsContent?.page,
+          hasPageTsx: !!nextjsContent?.['page.tsx'],
+          keys: nextjsContent ? Object.keys(nextjsContent) : []
+        });
         throw new BadRequestException('Generated Next.js content is incomplete');
       }
 
@@ -175,15 +181,15 @@ Return your response as a JSON object with the following structure:
 
   private extractTitleFromNextjs(nextjsContent: any): string {
     // Try to extract title from page.tsx or layout.tsx
-    const pageContent = nextjsContent.page || '';
-    const layoutContent = nextjsContent.layout || '';
+    const pageContent = nextjsContent.page || nextjsContent['page.tsx'] || '';
+    const layoutContent = nextjsContent.layout || nextjsContent['layout.tsx'] || '';
     const titleMatch = (pageContent + layoutContent).match(/title.*?['"`](.*?)['"`]/i);
     return titleMatch ? titleMatch[1] : 'Generated Next.js Website';
   }
 
   private extractDescriptionFromNextjs(nextjsContent: any): string {
     // Try to extract description from metadata or page content
-    const pageContent = nextjsContent.page || '';
+    const pageContent = nextjsContent.page || nextjsContent['page.tsx'] || '';
     const descriptionMatch = pageContent.match(/description.*?['"`](.*?)['"`]/i);
     return descriptionMatch ? descriptionMatch[1] : 'AI-generated Next.js application';
   }
