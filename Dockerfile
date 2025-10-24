@@ -17,8 +17,11 @@ RUN npx prisma generate
 # Build the application
 RUN npm run build
 
+# Verify build output
+RUN ls -la dist/
+
 # Expose port
 EXPOSE 3000
 
 # Start the application
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/main.js"]
