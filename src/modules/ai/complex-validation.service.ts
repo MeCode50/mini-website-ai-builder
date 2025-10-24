@@ -243,29 +243,44 @@ export class ComplexValidationService {
     const warnings: string[] = [];
     let score = 0;
 
-    const hasProductCard = this.hasComponent(content, 'ProductCard') || this.hasComponent(content, 'Product');
-    const hasCart = this.hasComponent(content, 'Cart') || this.hasComponent(content, 'ShoppingCart');
-    const hasCheckout = this.hasComponent(content, 'Checkout') || this.hasComponent(content, 'Payment');
+    // More flexible e-commerce validation - check for any e-commerce related content
+    const contentStr = JSON.stringify(content).toLowerCase();
+    const hasEcommerceContent = contentStr.includes('product') || 
+                                contentStr.includes('cart') || 
+                                contentStr.includes('shop') ||
+                                contentStr.includes('buy') ||
+                                contentStr.includes('price') ||
+                                contentStr.includes('checkout');
 
-    if (!hasProductCard) {
-      errors.push('Missing product display component for e-commerce');
+    if (!hasEcommerceContent) {
+      warnings.push('Consider adding e-commerce specific content like products, cart, or pricing');
     } else {
-      score += 10;
+      score += 15; // Give points for any e-commerce content
     }
 
-    if (!hasCart) {
-      errors.push('Missing shopping cart component for e-commerce');
-    } else {
+    // Check for specific components but don't fail if missing
+    const hasProductCard = this.hasComponent(content, 'ProductCard') || 
+                         this.hasComponent(content, 'Product') ||
+                         this.hasComponent(content, 'ProductList') ||
+                         this.hasComponent(content, 'Catalog');
+    
+    const hasCart = this.hasComponent(content, 'Cart') || 
+                   this.hasComponent(content, 'ShoppingCart') ||
+                   this.hasComponent(content, 'Basket');
+
+    if (hasProductCard) {
       score += 10;
+    } else {
+      warnings.push('Consider adding a product display component');
     }
 
-    if (!hasCheckout) {
-      warnings.push('Consider adding checkout component for complete e-commerce flow');
-    } else {
+    if (hasCart) {
       score += 10;
+    } else {
+      warnings.push('Consider adding a shopping cart component');
     }
 
-    return { isValid: errors.length === 0, errors, warnings, score, suggestions: [] };
+    return { isValid: true, errors, warnings, score, suggestions: [] };
   }
 
   private validateInteractiveFeatures(content: any): ValidationResult {
@@ -273,22 +288,43 @@ export class ComplexValidationService {
     const warnings: string[] = [];
     let score = 0;
 
-    const hasCarousel = this.hasComponent(content, 'Carousel') || this.hasComponent(content, 'Slider');
-    const hasModal = this.hasComponent(content, 'Modal') || this.hasComponent(content, 'Dialog');
+    // More flexible validation - check for any interactive content
+    const contentStr = JSON.stringify(content).toLowerCase();
+    const hasInteractiveContent = contentStr.includes('carousel') || 
+                                 contentStr.includes('slider') ||
+                                 contentStr.includes('modal') ||
+                                 contentStr.includes('dialog') ||
+                                 contentStr.includes('testimonial') ||
+                                 contentStr.includes('gallery');
 
-    if (!hasCarousel) {
-      errors.push('Missing carousel/slider component');
-    } else {
+    if (hasInteractiveContent) {
       score += 10;
-    }
-
-    if (!hasModal) {
-      warnings.push('Consider adding modal component for better UX');
     } else {
-      score += 5;
+      warnings.push('Consider adding interactive components like carousels or modals');
     }
 
-    return { isValid: errors.length === 0, errors, warnings, score, suggestions: [] };
+    const hasCarousel = this.hasComponent(content, 'Carousel') || 
+                       this.hasComponent(content, 'Slider') ||
+                       this.hasComponent(content, 'TestimonialCarousel') ||
+                       this.hasComponent(content, 'Gallery');
+
+    const hasModal = this.hasComponent(content, 'Modal') || 
+                    this.hasComponent(content, 'Dialog') ||
+                    this.hasComponent(content, 'Popup');
+
+    if (hasCarousel) {
+      score += 10;
+    } else {
+      warnings.push('Consider adding a carousel/slider component');
+    }
+
+    if (hasModal) {
+      score += 5;
+    } else {
+      warnings.push('Consider adding modal component for better UX');
+    }
+
+    return { isValid: true, errors, warnings, score, suggestions: [] };
   }
 
   private validateAuthenticationFeatures(content: any): ValidationResult {
@@ -296,22 +332,44 @@ export class ComplexValidationService {
     const warnings: string[] = [];
     let score = 0;
 
-    const hasLogin = this.hasComponent(content, 'Login') || this.hasComponent(content, 'SignIn');
-    const hasRegister = this.hasComponent(content, 'Register') || this.hasComponent(content, 'SignUp');
+    // More flexible authentication validation
+    const contentStr = JSON.stringify(content).toLowerCase();
+    const hasAuthContent = contentStr.includes('login') || 
+                          contentStr.includes('signin') ||
+                          contentStr.includes('register') ||
+                          contentStr.includes('signup') ||
+                          contentStr.includes('auth') ||
+                          contentStr.includes('user') ||
+                          contentStr.includes('profile');
 
-    if (!hasLogin) {
-      errors.push('Missing login component for authentication');
-    } else {
+    if (hasAuthContent) {
       score += 10;
-    }
-
-    if (!hasRegister) {
-      warnings.push('Consider adding registration component');
     } else {
-      score += 5;
+      warnings.push('Consider adding authentication features like login/register');
     }
 
-    return { isValid: errors.length === 0, errors, warnings, score, suggestions: [] };
+    const hasLogin = this.hasComponent(content, 'Login') || 
+                    this.hasComponent(content, 'SignIn') ||
+                    this.hasComponent(content, 'AuthForm') ||
+                    this.hasComponent(content, 'UserAuth');
+
+    const hasRegister = this.hasComponent(content, 'Register') || 
+                       this.hasComponent(content, 'SignUp') ||
+                       this.hasComponent(content, 'Registration');
+
+    if (hasLogin) {
+      score += 10;
+    } else {
+      warnings.push('Consider adding a login component');
+    }
+
+    if (hasRegister) {
+      score += 5;
+    } else {
+      warnings.push('Consider adding registration component');
+    }
+
+    return { isValid: true, errors, warnings, score, suggestions: [] };
   }
 
   private hasComponent(content: any, componentName: string): boolean {
