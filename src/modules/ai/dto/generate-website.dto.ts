@@ -5,11 +5,11 @@ export class GenerateWebsiteDto {
   @ApiProperty({
     description: 'The prompt describing the website to generate',
     example: 'Create a portfolio website for a photographer with a dark theme and gallery section',
-    maxLength: 1000,
+    maxLength: 5000,
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(1000, { message: 'Prompt must not exceed 1000 characters' })
+  @MaxLength(5000, { message: 'Prompt must not exceed 5000 characters' })
   prompt: string;
 
   @ApiPropertyOptional({
