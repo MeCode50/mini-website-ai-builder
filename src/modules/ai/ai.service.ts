@@ -45,6 +45,8 @@ Requirements:
 7. Include proper SEO and accessibility
 8. Generate multiple component files as needed
 
+IMPORTANT: Return ONLY valid JSON. Do not include markdown code blocks, backticks, or any other formatting. Just pure JSON.
+
 Return your response as a JSON object with the following structure:
 {
   "nextjsContent": {
@@ -95,9 +97,17 @@ Return your response as a JSON object with the following structure:
       // Parse the AI response
       let parsedResponse;
       try {
-        parsedResponse = JSON.parse(response);
+        // Clean the response to handle backticks and other special characters
+        const cleanedResponse = response
+          .replace(/```json\n?/g, '') // Remove markdown code blocks
+          .replace(/```\n?/g, '') // Remove remaining backticks
+          .trim();
+        
+        this.logger.log('Cleaned AI response:', cleanedResponse.substring(0, 200) + '...');
+        parsedResponse = JSON.parse(cleanedResponse);
       } catch (parseError) {
         this.logger.error('Failed to parse AI response as JSON', parseError);
+        this.logger.error('Raw response:', response.substring(0, 500));
         throw new BadRequestException('Invalid response format from AI service');
       }
 
