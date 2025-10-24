@@ -115,9 +115,9 @@ CRITICAL REQUIREMENTS:
 7. Generate multiple component files as needed
 
 MANDATORY STRUCTURE - Include ALL of these files:
-- page.tsx (main page component)
-- layout.tsx (root layout)
-- globals.css (Tailwind imports)
+- Main page: page.tsx OR index.tsx OR pages/index.tsx
+- Layout: layout.tsx OR _app.tsx OR _document.tsx  
+- CSS: globals.css OR styles.css OR index.css
 - At least 2 components (Header.tsx, Footer.tsx, etc.)
 
 IMPORTANT: Return ONLY valid JSON. No markdown, no backticks, no code blocks.`;
@@ -187,25 +187,48 @@ Return your response as a JSON object with this EXACT structure:
       return { isValid: false, errors };
     }
 
-    // Check required files
-    if (!nextjsContent['page.tsx']) {
-      errors.push('Missing page.tsx');
-    }
-    if (!nextjsContent['layout.tsx']) {
-      errors.push('Missing layout.tsx');
-    }
-    if (!nextjsContent['globals.css']) {
-      errors.push('Missing globals.css');
+    // Check for main page file (flexible naming)
+    const hasMainPage = nextjsContent['page.tsx'] || 
+                       nextjsContent['index.tsx'] || 
+                       (nextjsContent.pages && nextjsContent.pages['index.tsx']);
+    
+    if (!hasMainPage) {
+      errors.push('Missing main page file (page.tsx, index.tsx, or pages/index.tsx)');
     }
 
-    // Check components
-    if (!nextjsContent.components || Object.keys(nextjsContent.components).length === 0) {
-      errors.push('Missing components');
+    // Check for layout file (flexible naming)
+    const hasLayout = nextjsContent['layout.tsx'] || 
+                      nextjsContent['_app.tsx'] ||
+                      nextjsContent['_document.tsx'];
+    
+    if (!hasLayout) {
+      errors.push('Missing layout file (layout.tsx, _app.tsx, or _document.tsx)');
     }
 
-    // Validate content quality
-    if (nextjsContent['page.tsx'] && nextjsContent['page.tsx'].length < 50) {
-      errors.push('page.tsx content too short');
+    // Check for CSS file (flexible naming)
+    const hasCSS = nextjsContent['globals.css'] || 
+                   nextjsContent['styles.css'] ||
+                   nextjsContent['index.css'];
+    
+    if (!hasCSS) {
+      errors.push('Missing CSS file (globals.css, styles.css, or index.css)');
+    }
+
+    // Check components (flexible structure)
+    const hasComponents = nextjsContent.components || 
+                         (nextjsContent.pages && Object.keys(nextjsContent.pages).length > 1);
+    
+    if (!hasComponents) {
+      errors.push('Missing components or multiple pages');
+    }
+
+    // Validate content quality for main page
+    const mainPageContent = nextjsContent['page.tsx'] || 
+                           nextjsContent['index.tsx'] || 
+                           (nextjsContent.pages && nextjsContent.pages['index.tsx']);
+    
+    if (mainPageContent && mainPageContent.length < 30) {
+      errors.push('Main page content too short');
     }
 
     return { isValid: errors.length === 0, errors };
@@ -384,14 +407,25 @@ export default function Footer() {
   }
 
   private extractTitleFromNextjs(nextjsContent: any): string {
-    const pageContent = nextjsContent.page || nextjsContent['page.tsx'] || '';
-    const layoutContent = nextjsContent.layout || nextjsContent['layout.tsx'] || '';
+    // Try to extract title from various page files
+    const pageContent = nextjsContent['page.tsx'] || 
+                       nextjsContent['index.tsx'] || 
+                       (nextjsContent.pages && nextjsContent.pages['index.tsx']) || '';
+    
+    const layoutContent = nextjsContent['layout.tsx'] || 
+                         nextjsContent['_app.tsx'] ||
+                         nextjsContent['_document.tsx'] || '';
+    
     const titleMatch = (pageContent + layoutContent).match(/title.*?['"`](.*?)['"`]/i);
     return titleMatch ? titleMatch[1] : 'Generated Next.js Website';
   }
 
   private extractDescriptionFromNextjs(nextjsContent: any): string {
-    const pageContent = nextjsContent.page || nextjsContent['page.tsx'] || '';
+    // Try to extract description from various page files
+    const pageContent = nextjsContent['page.tsx'] || 
+                       nextjsContent['index.tsx'] || 
+                       (nextjsContent.pages && nextjsContent.pages['index.tsx']) || '';
+    
     const descriptionMatch = pageContent.match(/description.*?['"`](.*?)['"`]/i);
     return descriptionMatch ? descriptionMatch[1] : 'AI-generated Next.js application';
   }
