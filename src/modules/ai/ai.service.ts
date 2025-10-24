@@ -174,6 +174,14 @@ export class AiService {
   private async generateComplexWebsite(dto: GenerateWebsiteDto, attempt: number, complexity: any): Promise<any> {
     this.logger.log(`Generating complex website with features: ${complexity.features.join(', ')}`);
 
+    // For very long prompts (>2000 chars), use simplified approach to prevent timeouts
+    const isVeryLongPrompt = dto.prompt.length > 2000;
+    
+    if (isVeryLongPrompt) {
+      this.logger.log('Very long prompt detected, using simplified generation approach');
+      return await this.generateSimplifiedComplexWebsite(dto, complexity);
+    }
+
     // Multi-step generation for complex websites
     const steps: GenerationStep[] = [
       {
@@ -195,11 +203,6 @@ export class AiService {
         name: 'styling_animations',
         prompt: this.buildStylingPrompt(dto, complexity),
         temperature: 0.6
-      },
-      {
-        name: 'integration_validation',
-        prompt: this.buildIntegrationPrompt(dto, complexity),
-        temperature: 0.2
       }
     ];
 
@@ -221,6 +224,77 @@ export class AiService {
 
     // Combine all step results into final structure
     return this.combineGenerationResults(results, complexity);
+  }
+
+  private async generateSimplifiedComplexWebsite(dto: GenerateWebsiteDto, complexity: any): Promise<any> {
+    this.logger.log('Using simplified complex generation to prevent timeouts');
+    
+    // Single-step generation for very long prompts
+    const systemPrompt = `You are an expert Next.js developer. Create a comprehensive website for: ${dto.title || 'Advanced Website'}
+
+REQUIREMENTS:
+- Description: ${dto.description || dto.prompt}
+- Complexity: ${complexity.level}
+- Key Features: ${complexity.features.slice(0, 5).join(', ')} (focus on top 5 features)
+
+GENERATE A COMPLETE NEXT.JS PROJECT with:
+1. page.tsx - Main homepage with hero section
+2. layout.tsx - Root layout with navigation
+3. globals.css - Tailwind CSS configuration
+4. components/ - Essential components (Header, Footer, and 2-3 feature components)
+5. package.json - Dependencies
+6. tailwind.config.js - Configuration
+
+IMPORTANT: Keep response concise but complete. Focus on core functionality.
+Return ONLY valid JSON in this exact format:
+{
+  "nextjsContent": {
+    "page.tsx": "complete homepage code",
+    "layout.tsx": "complete layout code", 
+    "globals.css": "complete CSS code",
+    "components": {
+      "Header.tsx": "header component code",
+      "Footer.tsx": "footer component code",
+      "FeatureComponent.tsx": "main feature component code"
+    }
+  },
+  "packageJson": {
+    "dependencies": {
+      "next": "^14.0.0",
+      "react": "^18.0.0",
+      "tailwindcss": "^3.0.0"
+    }
+  },
+  "tailwindConfig": "module.exports = { content: [...], theme: {...}, plugins: [...] };",
+  "metadata": {
+    "complexity": "${complexity.level}",
+    "features": ${JSON.stringify(complexity.features.slice(0, 5))},
+    "generationMethod": "simplified_complex"
+  }
+}`;
+
+    const completion = await this.openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: dto.prompt },
+      ],
+      temperature: 0.4,
+      max_tokens: 4000,
+    });
+
+    const response = completion.choices[0].message.content;
+    if (!response) {
+      throw new BadRequestException('AI service did not return any content.');
+    }
+
+    try {
+      const cleanedResponse = this.cleanAIResponse(response);
+      return JSON.parse(cleanedResponse);
+    } catch (parseError) {
+      this.logger.error('JSON parsing failed for simplified generation:', parseError);
+      throw new BadRequestException(`Invalid response format: ${parseError.message}`);
+    }
   }
 
   private buildProjectStructurePrompt(dto: GenerateWebsiteDto, complexity: any): string {
@@ -490,15 +564,22 @@ Return ONLY valid JSON:
   }
 
   private async executeGenerationStep(step: GenerationStep, userPrompt: string): Promise<any> {
-    const completion = await this.openai.chat.completions.create({
+    // Add timeout wrapper
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('OpenAI API timeout after 25 seconds')), 25000);
+    });
+
+    const apiPromise = this.openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         { role: 'system', content: step.prompt },
         { role: 'user', content: userPrompt },
       ],
       temperature: step.temperature,
-      max_tokens: step.maxTokens || 4000,
+      max_tokens: step.maxTokens || 3000, // Reduced from 4000
     });
+
+    const completion = await Promise.race([apiPromise, timeoutPromise]) as any;
 
     const response = completion.choices[0].message.content;
     if (!response) {
