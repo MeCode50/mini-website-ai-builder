@@ -30,7 +30,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor());
 
   // Global guards
-  app.useGlobalGuards(new ThrottlerGuard());
+  // Note: ThrottlerGuard is already configured in the module
 
   // Global validation pipe
   app.useGlobalPipes(

@@ -1,26 +1,6 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: ai-website-builder-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ai_website_builder
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Redis for caching (optional)
   redis:
     image: redis:7-alpine
@@ -36,7 +16,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # AI Website Builder Backend
+  # AI Website Builder Backend with Neon
   app:
     build:
       context: .
@@ -47,7 +27,7 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: production
-      DATABASE_URL: ${DATABASE_URL}  # Use Neon connection string
+      DATABASE_URL: ${DATABASE_URL}  # Neon connection string
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       PORT: 3000
       API_PREFIX: api/v1
@@ -63,5 +43,4 @@ services:
       retries: 3
 
 volumes:
-  postgres_data:
   redis_data:

@@ -107,7 +107,7 @@ describe('WebsiteService', () => {
 
   describe('findAll', () => {
     it('should return paginated websites', async () => {
-      const query = { page: 1, limit: 10 };
+      const query = { page: 1, limit: 10, search: undefined, isPublic: undefined, category: undefined, theme: undefined };
       const websites = [
         {
           id: '1',

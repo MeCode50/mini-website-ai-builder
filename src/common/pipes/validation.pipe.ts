@@ -33,7 +33,7 @@ export class CustomValidationPipe implements PipeTransform<any> {
     
     for (const error of errors) {
       if (error.constraints) {
-        messages.push(...Object.values(error.constraints));
+        messages.push(...Object.values(error.constraints) as string[]);
       }
       
       if (error.children && error.children.length > 0) {

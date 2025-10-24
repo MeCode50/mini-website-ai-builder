@@ -1,9 +1,31 @@
-import { IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsOptional, IsString, IsBoolean, IsPositive, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { PaginationDto } from '../../common/dto/pagination.dto';
 
-export class WebsiteQueryDto extends PaginationDto {
+export class WebsiteQueryDto {
+  @ApiPropertyOptional({
+    description: 'Page number for pagination',
+    minimum: 1,
+    default: 1,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsPositive()
+  @Min(1)
+  page?: number = 1;
+
+  @ApiPropertyOptional({
+    description: 'Number of items per page',
+    minimum: 1,
+    maximum: 100,
+    default: 10,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsPositive()
+  @Min(1)
+  @Max(100)
+  limit?: number = 10;
   @ApiPropertyOptional({
     description: 'Search term for title or description',
     example: 'photography',

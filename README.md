@@ -38,13 +38,25 @@ src/
 
 - **Framework**: NestJS 10.x
 - **Language**: TypeScript 5.x
-- **Database**: PostgreSQL 15
+- **Database**: Neon (Serverless PostgreSQL) or PostgreSQL 15
 - **ORM**: Prisma 5.x
 - **AI**: OpenAI GPT-4
 - **Validation**: class-validator, class-transformer
 - **Documentation**: Swagger/OpenAPI
 - **Security**: Helmet.js, CORS
 - **Containerization**: Docker, Docker Compose
+
+## 🌟 Why Neon Database?
+
+**Neon** is a serverless PostgreSQL platform that's perfect for AI applications:
+
+- **🚀 Serverless**: No database server management required
+- **📈 Auto-scaling**: Handles traffic spikes when AI generation is popular
+- **⚡ Instant Setup**: Get a database in seconds, no local installation
+- **🌍 Global Edge**: Low latency worldwide for better user experience
+- **💰 Cost-effective**: Pay only for what you use, no idle costs
+- **🔒 Production Ready**: SOC 2 compliant with automatic backups
+- **🌿 Database Branching**: Git-like branching for database changes
 
 ## 📋 Prerequisites
 
@@ -92,9 +104,30 @@ THROTTLE_TTL=60
 THROTTLE_LIMIT=100
 ```
 
-### 3. Database Setup
+### 3. Database Setup (Neon - Recommended)
+
+#### Option A: Using Neon (Serverless PostgreSQL)
+1. **Create Neon Account**: Go to [console.neon.tech](https://console.neon.tech/)
+2. **Create Project**: Create a new project for your AI Website Builder
+3. **Get Connection String**: Copy your Neon connection string
+4. **Update .env**: Add your Neon connection string to `DATABASE_URL`
 
 ```bash
+# Generate Prisma client
+npm run prisma:generate
+
+# Deploy schema to Neon
+npx prisma db push
+
+# Seed the database (optional)
+npm run db:seed
+```
+
+#### Option B: Using Local PostgreSQL
+```bash
+# Start local PostgreSQL with Docker
+docker-compose -f docker-compose.dev.yml up -d
+
 # Generate Prisma client
 npm run prisma:generate
 
