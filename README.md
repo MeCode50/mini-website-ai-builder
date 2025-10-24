@@ -10,7 +10,7 @@ A production-ready NestJS backend service that generates websites using AI. This
 - **Rate Limiting**: Built-in throttling to prevent abuse
 - **Security**: Helmet.js security headers, CORS protection, input validation
 - **Monitoring**: Health checks, logging, and error tracking
-- **Docker Support**: Complete containerization with Docker Compose
+- **Easy Deployment**: Ready for Railway, Vercel, or any Node.js hosting
 - **API Documentation**: Interactive Swagger/OpenAPI documentation
 - **TypeScript**: Full type safety and modern JavaScript features
 
@@ -44,7 +44,7 @@ src/
 - **Validation**: class-validator, class-transformer
 - **Documentation**: Swagger/OpenAPI
 - **Security**: Helmet.js, CORS
-- **Containerization**: Docker, Docker Compose
+- **Deployment**: Railway, Vercel, or any Node.js platform
 
 ## 🌟 Why Neon Database?
 
@@ -64,7 +64,6 @@ src/
 - npm or yarn
 - PostgreSQL 15+
 - OpenAI API key
-- Docker (optional)
 
 ## 🚀 Quick Start
 
@@ -125,14 +124,15 @@ npm run db:seed
 
 #### Option B: Using Local PostgreSQL
 ```bash
-# Start local PostgreSQL with Docker
-docker-compose -f docker-compose.dev.yml up -d
+# Install PostgreSQL locally or use a cloud service
+# Update DATABASE_URL in .env file
 
 # Generate Prisma client
 npm run prisma:generate
 
 # Run database migrations
 npm run prisma:migrate
+```
 
 # Seed the database (optional)
 npm run db:seed
@@ -146,27 +146,6 @@ npm run start:dev
 
 The API will be available at `http://localhost:3000/api/v1`
 
-## 🐳 Docker Setup
-
-### Development
-
-```bash
-# Start development database
-docker-compose -f docker-compose.dev.yml up -d
-
-# Run the application locally
-npm run start:dev
-```
-
-### Production
-
-```bash
-# Build and start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f app
-```
 
 ## 📚 API Documentation
 

@@ -9,29 +9,22 @@
     "target": "ES2020",
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",                
+    "rootDir": "./src",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strictNullChecks": false,
+    "strict": false,
     "noImplicitAny": false,
-    "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
     "paths": {
       "@/*": ["src/*"],
       "@/common/*": ["src/common/*"],
       "@/modules/*": ["src/modules/*"]
     }
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "test",
-    "prisma",
-    "scripts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test", "prisma", "scripts", "**/*.spec.ts"]
 }
