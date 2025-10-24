@@ -496,7 +496,6 @@ Return ONLY valid JSON:
         { role: 'system', content: step.prompt },
         { role: 'user', content: userPrompt },
       ],
-      response_format: { type: 'json_object' },
       temperature: step.temperature,
       max_tokens: step.maxTokens || 4000,
     });
@@ -607,7 +606,6 @@ Return ONLY valid JSON:
         { role: 'system', content: systemPrompt },
         { role: 'user', content: dto.prompt },
       ],
-      response_format: { type: 'json_object' },
       temperature: attempt === 1 ? 0.7 : 0.3,
     });
 
