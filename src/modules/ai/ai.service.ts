@@ -33,25 +33,44 @@ export class AiService {
     try {
       this.logger.log(`Generating website for prompt: ${dto.prompt.substring(0, 100)}...`);
 
-      const systemPrompt = `You are an expert web developer. Generate a complete, modern, and responsive website based on the user's prompt.
+      const systemPrompt = `You are an expert Next.js developer. Generate a complete, modern, and responsive Next.js application based on the user's prompt.
 
 Requirements:
-1. Generate clean, semantic HTML5 structure
-2. Include modern CSS with responsive design
-3. Use a professional color scheme and typography
-4. Include interactive elements where appropriate
-5. Ensure the website is mobile-friendly
-6. Use modern CSS features like Flexbox or Grid
-7. Include proper meta tags and accessibility features
+1. Generate Next.js 14+ components with App Router
+2. Use Tailwind CSS for styling
+3. Include shadcn/ui components where appropriate
+4. Use TypeScript for type safety
+5. Include responsive design
+6. Use modern React patterns (hooks, components)
+7. Include proper SEO and accessibility
+8. Generate multiple component files as needed
 
 Return your response as a JSON object with the following structure:
 {
-  "htmlContent": "complete HTML document",
-  "cssContent": "complete CSS styles",
+  "nextjsContent": {
+    "page.tsx": "main page component",
+    "components": {
+      "Header.tsx": "header component",
+      "Footer.tsx": "footer component"
+    },
+    "layout.tsx": "root layout component",
+    "globals.css": "global styles with Tailwind imports"
+  },
+  "packageJson": {
+    "dependencies": {
+      "next": "^14.0.0",
+      "react": "^18.0.0",
+      "tailwindcss": "^3.0.0",
+      "@radix-ui/react-*": "latest versions"
+    }
+  },
+  "tailwindConfig": "tailwind.config.js content",
   "metadata": {
     "category": "website category",
     "theme": "color theme",
-    "features": ["list", "of", "features"]
+    "features": ["list", "of", "features"],
+    "framework": "Next.js",
+    "styling": "Tailwind CSS + shadcn/ui"
   }
 }`;
 
@@ -82,21 +101,26 @@ Return your response as a JSON object with the following structure:
         throw new BadRequestException('Invalid response format from AI service');
       }
 
-      const { htmlContent, cssContent, metadata } = parsedResponse;
+      const { nextjsContent, packageJson, tailwindConfig, metadata } = parsedResponse;
 
-      if (!htmlContent || !cssContent) {
-        throw new BadRequestException('Generated content is incomplete');
+      if (!nextjsContent || !nextjsContent.page) {
+        throw new BadRequestException('Generated Next.js content is incomplete');
       }
 
       // Save the generated website to database
       const website = await this.prisma.website.create({
         data: {
-          title: dto.title || this.extractTitleFromHtml(htmlContent),
-          description: dto.description || this.extractDescriptionFromHtml(htmlContent),
+          title: dto.title || this.extractTitleFromNextjs(nextjsContent),
+          description: dto.description || this.extractDescriptionFromNextjs(nextjsContent),
           prompt: dto.prompt,
-          htmlContent,
-          cssContent,
-          metadata: metadata || {},
+          htmlContent: JSON.stringify(nextjsContent), // Store Next.js content as JSON
+          cssContent: tailwindConfig || '',
+          metadata: {
+            ...metadata,
+            packageJson: packageJson || {},
+            framework: 'Next.js',
+            styling: 'Tailwind CSS + shadcn/ui'
+          },
           isPublic: dto.isPublic || false,
         },
       });
@@ -116,8 +140,8 @@ Return your response as a JSON object with the following structure:
         title: website.title,
         description: website.description,
         prompt: website.prompt,
-        htmlContent: website.htmlContent,
-        cssContent: website.cssContent,
+        htmlContent: website.htmlContent, // This now contains Next.js content as JSON
+        cssContent: website.cssContent, // This now contains Tailwind config
         isPublic: website.isPublic,
         createdAt: website.createdAt,
         updatedAt: website.updatedAt,
@@ -139,13 +163,18 @@ Return your response as a JSON object with the following structure:
     }
   }
 
-  private extractTitleFromHtml(htmlContent: string): string {
-    const titleMatch = htmlContent.match(/<title>(.*?)<\/title>/i);
-    return titleMatch ? titleMatch[1] : 'Generated Website';
+  private extractTitleFromNextjs(nextjsContent: any): string {
+    // Try to extract title from page.tsx or layout.tsx
+    const pageContent = nextjsContent.page || '';
+    const layoutContent = nextjsContent.layout || '';
+    const titleMatch = (pageContent + layoutContent).match(/title.*?['"`](.*?)['"`]/i);
+    return titleMatch ? titleMatch[1] : 'Generated Next.js Website';
   }
 
-  private extractDescriptionFromHtml(htmlContent: string): string {
-    const metaMatch = htmlContent.match(/<meta\s+name="description"\s+content="(.*?)"/i);
-    return metaMatch ? metaMatch[1] : 'AI-generated website';
+  private extractDescriptionFromNextjs(nextjsContent: any): string {
+    // Try to extract description from metadata or page content
+    const pageContent = nextjsContent.page || '';
+    const descriptionMatch = pageContent.match(/description.*?['"`](.*?)['"`]/i);
+    return descriptionMatch ? descriptionMatch[1] : 'AI-generated Next.js application';
   }
 }

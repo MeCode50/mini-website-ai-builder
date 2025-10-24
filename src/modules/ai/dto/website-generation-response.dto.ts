@@ -26,14 +26,14 @@ export class WebsiteGenerationResponseDto {
   prompt: string;
 
   @ApiProperty({
-    description: 'The generated HTML content',
-    example: '<!DOCTYPE html><html>...</html>',
+    description: 'The generated Next.js content (JSON string)',
+    example: '{"page.tsx": "export default function Page() {...}", "components": {...}}',
   })
   htmlContent: string;
 
   @ApiProperty({
-    description: 'The generated CSS content',
-    example: 'body { font-family: Arial, sans-serif; }',
+    description: 'The Tailwind CSS configuration',
+    example: 'module.exports = { content: ["./src/**/*.{js,ts,jsx,tsx}"], ... }',
   })
   cssContent: string;
 
