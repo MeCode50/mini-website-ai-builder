@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/exceptions/http-exception.filter';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
+import { DetailedExceptionFilter } from './common/filters/detailed-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ThrottlerGuard } from './common/guards/throttler.guard';
 
@@ -23,8 +24,8 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  // Global exception filters
-  app.useGlobalFilters(new HttpExceptionFilter(), new PrismaExceptionFilter());
+      // Global exception filters
+      app.useGlobalFilters(new DetailedExceptionFilter(), new PrismaExceptionFilter());
 
   // Global interceptors
   app.useGlobalInterceptors(new LoggingInterceptor());
